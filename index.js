@@ -33,6 +33,9 @@ async function run() {
     const publishedBlogsCollections = client
       .db("addBlogDatabase")
       .collection("publishedBlogCollection");
+    const commentsCollections = client
+      .db("addBlogDatabase")
+      .collection("commentsCollection");
     // create blog data
     app.post("/addBlog", async (req, res) => {
       const user = req.body;
@@ -97,15 +100,28 @@ async function run() {
       res.send(result);
     });
     // unpublish blog
-    app.delete("/publishBlog/:id", async (req, res) => {
-      const id = req.params.id;
-      // console.log(id);
-      const query = { _id: ObjectId(id) };
-      console.log(query);
-      const result = await publishedBlogsCollections.deleteOne(query);
+    // app.delete("/publishBlog/:id", async (req, res) => {
+    //   const id = req.params.id;
+    //   // console.log(id);
+    //   const query = { _id: ObjectId(id) };
+    //   console.log(query);
+    //   const result = await publishedBlogsCollections.deleteOne(query);
 
+    //   res.send(result);
+    //   console.log(result);
+    // });
+    app.post("/comments/", async (req, res) => {
+      const user = req.body;
+      console.log(user);
+      const result = await commentsCollections.insertOne(user);
       res.send(result);
-      console.log(result);
+      // console.log(result);
+    });
+    app.get("/comments/", async (req, res) => {
+      const query = {};
+      const cursor = await commentsCollections.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
     });
   } finally {
   }
