@@ -11,7 +11,12 @@ app.get("/", (req, res) => {
   res.send("I am running on the home of the Server.");
 });
 
-const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const {
+  MongoClient,
+  ServerApiVersion,
+  ObjectId,
+  CURSOR_FLAGS,
+} = require("mongodb");
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_USER_PASSWORD}@cluster0.efpjwcu.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
@@ -25,6 +30,9 @@ async function run() {
     const addBlogCollections = client
       .db("addBlogDatabase")
       .collection("addBlogCollection");
+    const publishedBlogsCollections = client
+      .db("addBlogDatabase")
+      .collection("publishedBlogCollection");
     // create blog data
     app.post("/addBlog", async (req, res) => {
       const user = req.body;
@@ -73,6 +81,31 @@ async function run() {
       const query = { _id: ObjectId(id) };
       const result = await addBlogCollections.deleteOne(query);
       res.send(result);
+    });
+    //create publish blog
+    app.post("/publishBlog/", async (req, res) => {
+      const user = req.body;
+      const result = await publishedBlogsCollections.insertOne(user);
+      res.send(result);
+      // console.log(result);
+    });
+    // get publish blog
+    app.get("/publishBlog", async (req, res) => {
+      const query = {};
+      const cursor = await publishedBlogsCollections.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+    // unpublish blog
+    app.delete("/publishBlog/:id", async (req, res) => {
+      const id = req.params.id;
+      // console.log(id);
+      const query = { _id: ObjectId(id) };
+      console.log(query);
+      const result = await publishedBlogsCollections.deleteOne(query);
+
+      res.send(result);
+      console.log(result);
     });
   } finally {
   }
